@@ -1,9 +1,12 @@
-# API Checkout Demo
+# API Checkout Rest e GraphQL
+
+Se você é aluno da Pós-Graduação em Automação de Testes de Software (Turma 2), faça um fork desse repositório e boa sorte em seu trabalho de conclusão da disciplina.
 
 ## Instalação
 
 ```bash
 npm install express jsonwebtoken swagger-ui-express apollo-server-express graphql
+```
 
 ## Exemplos de chamadas
 
