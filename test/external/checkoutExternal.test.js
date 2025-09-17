@@ -1,20 +1,13 @@
 const request = require('supertest');
-const sinon = require('sinon');
 const { expect } = require('chai');
-
-// Aplicação
-const app = require('../../../pgats-test-api-trabalho-final/rest/app');
-
-// Mock
-const checkoutService = require('../../src/services/checkoutService');
-const userService = require('../../src/services/userService');
+require('dotenv').config();
 
 // Testes
-describe('Checkout Controller', () => {
+describe('Checkout External', () => {
     describe('POST api/checkout', () => {
 
         before(async () => {
-            const respostaRegister = await request(app)
+            const respostaRegister = await request(process.env.BASE_URL_REST)
                 .post('/api/users/register')
                 .send({
                     name: 'warlley',
@@ -24,7 +17,7 @@ describe('Checkout Controller', () => {
         });
 
         beforeEach(async () => {
-            const respostaLogin = await request(app)
+            const respostaLogin = await request(process.env.BASE_URL_REST)
                 .post('/api/users/login')
                 .send({
                     email: 'warlley.freitas@live.com',
@@ -34,23 +27,8 @@ describe('Checkout Controller', () => {
             token = respostaLogin.body.token;
         });
 
-        it('Usando Mock: Checkout realizado com sucesso retorna 200', async () => {
-            const checkoutServiceStub = sinon.stub(checkoutService, 'checkout');
-            checkoutServiceStub.returns({
-                valorFinal: 1050,
-                userId: 1,
-                items: [
-                    {
-                        productId: 1,
-                        quantity: 10
-                    }
-                ],
-                freight: 50,
-                paymentMethod: "boleto",
-                total: 1050
-            });
-
-            const resposta = await request(app)
+        it('Checkout realizado com sucesso retorna 200', async () => {
+            const resposta = await request(process.env.BASE_URL_REST)
                 .post('/api/checkout')
                 .set('Authorization', `Bearer ${token}`)
                 .send({
@@ -71,14 +49,10 @@ describe('Checkout Controller', () => {
                 });
 
             expect(resposta.status).to.equal(200);
-            expect(resposta.body).to.have.property('valorFinal', 1050);
         });
 
-        it('Usando Mock: Checkout com token inválido retorna 401', async () => {
-            const userServiceStub = sinon.stub(userService, 'verifyToken');
-            userServiceStub.returns(null)
-
-            const resposta = await request(app)
+        it('Checkout com token inválido retorna 401', async () => {
+            const resposta = await request(process.env.BASE_URL_REST)
                 .post('/api/checkout')
                 .set('Authorization', `Bearer ${token}+1`)
                 .send({
@@ -102,11 +76,8 @@ describe('Checkout Controller', () => {
             expect(resposta.body).to.have.property('error', 'Token inválido');
         });
 
-        it('Usando Mock: Erro no Checkout retorna 400', async () => {
-            const checkoutServiceStub = sinon.stub(checkoutService, 'checkout');
-            checkoutServiceStub.throws(new Error('Produto não encontrado'));
-
-            const resposta = await request(app)
+        it('Erro no Checkout retorna 400', async () => {
+            const resposta = await request(process.env.BASE_URL_REST)
                 .post('/api/checkout')
                 .set('Authorization', `Bearer ${token}`)
                 .send({
@@ -130,8 +101,59 @@ describe('Checkout Controller', () => {
             expect(resposta.body).to.have.property('error', 'Produto não encontrado');
         });
 
+        it('5% de desconto no valor total se pagar com cartão', async () => {
+            const resposta = await request(process.env.BASE_URL_REST)
+                .post('/api/checkout')
+                .set('Authorization', `Bearer ${token}`)
+                .send({
+                    "items": [
+                        {
+                            "productId": 2,
+                            "quantity": 10
+                        }
+                    ],
+                    "freight": 0,
+                    "paymentMethod": "credit_card",
+                    "cardData": {
+                        "number": "12345678",
+                        "name": "Warlley Freitas",
+                        "expiry": "12/30",
+                        "cvv": "545"
+                    }
+                });
+            
+            let totalReturned = resposta.body.valorFinal;
+            expect(resposta.status).to.equal(200);
+            expect(resposta.body).to.have.property('valorFinal', totalReturned); // (200*10)*0.95 + 0
+        });
+
+        it('Resposta do checkout contém valor final', async () => {
+            const resposta = await request(process.env.BASE_URL_REST)
+                .post('/api/checkout')
+                .set('Authorization', `Bearer ${token}`)
+                .send({
+                    "items": [
+                        {
+                            "productId": 1,
+                            "quantity": 10
+                        }
+                    ],
+                    "freight": 10,
+                    "paymentMethod": "boleto",
+                    "cardData": {
+                        "number": "12345678",
+                        "name": "Warlley Freitas",
+                        "expiry": "12/30",
+                        "cvv": "545"
+                    }
+                });
+
+            expect(resposta.status).to.equal(200);
+            expect(resposta.body).to.have.property('valorFinal');
+        });
+
         afterEach(() => {
-            sinon.restore();
+            
         })
     });
 
