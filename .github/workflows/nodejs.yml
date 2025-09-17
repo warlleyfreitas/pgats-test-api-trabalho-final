@@ -26,7 +26,7 @@ jobs:
       run: npm run test-controller
     
     - name: Initialize REST API
-      run: npm start-rest &
+      run: npm run start-rest &
 
     - name: Wait for the REST API to be ready
       run: sleep 5
