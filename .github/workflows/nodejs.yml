@@ -28,7 +28,10 @@ jobs:
     - name: Initialize REST API
       run: npm run start-rest &
 
-    - name: Wait for the REST API to be ready
+    - name: Initialize GraphQL API
+      run: npm run start-graphql &
+
+    - name: Wait for the REST & GraphQL API to be ready
       run: sleep 5
 
     - name: Create .env
