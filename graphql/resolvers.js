@@ -13,9 +13,15 @@ module.exports = {
       return user;
     },
     login: (_, { email, password }) => {
-      const result = userService.authenticate(email, password);
-      if (!result) throw new Error('Credenciais inválidas');
-      return result;
+      const user = userService.findUserByEmail(email);
+      if (!user || user.password !== password) {
+        throw new Error('Credenciais inválidas');
+      }
+      const authResult = userService.authenticate(email, password);
+      return {
+        token: authResult.token,
+        user: { name: user.name, email: user.email }
+      };
     },
     checkout: (_, { items, freight, paymentMethod, cardData }, context) => {
       const { userData } = context;

@@ -7,7 +7,7 @@ describe('Checkout External', () => {
     describe('POST api/checkout', () => {
 
         before(async () => {
-            const respostaRegister = await request(process.env.BASE_URL_REST)
+            await request(process.env.BASE_URL_REST)
                 .post('/api/users/register')
                 .send({
                     name: 'warlley',

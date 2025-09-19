@@ -14,7 +14,7 @@ describe('Checkout Controller', () => {
     describe('POST api/checkout', () => {
 
         before(async () => {
-            const respostaRegister = await request(app)
+            await request(app)
                 .post('/api/users/register')
                 .send({
                     name: 'warlley',

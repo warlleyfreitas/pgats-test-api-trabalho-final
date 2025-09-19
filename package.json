@@ -4,11 +4,13 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "mocha './test/**/*.test.js' --timeout 10000",
+    "test": "mocha './test/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "start-rest": "node rest/server.js",
     "start-graphql": "node graphql/server.js",
-    "test-external-rest": "mocha './test/external/**/*.test.js' --timeout 10000",
-    "test-controller": "mocha './test/controller/**/*.test.js' --timeout 10000"
+    "test-external-rest": "mocha './test/external/checkoutExternalRest.test.js' --timeout 10000 --reporter mochawesome",
+    "test-external-graphql": "mocha './test/external/checkoutExternalGraphQL.test.js' --timeout 10000 --reporter mochawesome",
+    "test-external": "mocha './test/external/**/*.test.js' --timeout 10000 --reporter mochawesome",
+    "test-controller": "mocha './test/controller/**/*.test.js' --timeout 10000 --reporter mochawesome"
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "chai": "4.5.0",
-    "dotenv": "^17.2.2"
+    "dotenv": "^17.2.2",
+    "mochawesome": "^7.1.4"
   }
 }
