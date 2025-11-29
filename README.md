@@ -211,7 +211,61 @@ Acesse o playground GraphQL em [http://localhost:4000/graphql](http://localhost:
 - Usuários e produtos em memória (veja arquivos em `src/models`)
 
 ## Testes
+
+### Testes Unitários e de Integração
 - Para testes automatizados, importe o `app` de `rest/app.js` ou `graphql/app.js` sem o método `listen()`
+- Execute os testes com: `npm test`
+- Testes de controller: `npm run test-controller`
+- Testes externos REST: `npm run test-external-rest`
+- Testes externos GraphQL: `npm run test-external-graphql`
+
+### Testes de Performance (K6)
+
+⚡ **Novos testes de performance com K6!**
+
+#### Instalação do K6
+```bash
+# macOS
+brew install k6
+
+# Linux (Debian/Ubuntu)
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+sudo apt-get update
+sudo apt-get install k6
+
+# Windows (Chocolatey)
+choco install k6
+```
+
+#### Executar Testes de Performance
+
+**Importante:** Inicie o servidor antes de executar os testes!
+
+```bash
+# 1. Inicie o servidor REST (Terminal 1)
+npm run start-rest
+
+# 2. Execute os testes K6 REST (Terminal 2)
+npm run test-k6-rest
+
+# Para testes GraphQL
+npm run start-graphql  # Terminal 1
+npm run test-k6-graphql  # Terminal 2
+
+# Executar todos os testes K6
+npm run test-k6-all
+```
+
+#### Cenários Testados
+- ✅ Registro de usuários
+- ✅ Login e autenticação JWT
+- ✅ Checkout com boleto
+- ✅ Checkout com cartão de crédito (com desconto de 5%)
+- ✅ Testes com 10 VUs (usuários virtuais) por 30 segundos
+- ✅ Validação de performance (95% das requisições < 2s)
+
+📖 **Documentação completa:** Veja `test/k6/README.md` para mais detalhes
 
 ## Documentação
 - Swagger disponível em `/api-docs`
