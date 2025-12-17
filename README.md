@@ -532,8 +532,6 @@ export function handleSummary(data) {
 
 Para visualizar: `open test/k6/report.html`
 
-📖 **Documentação completa:** Veja `test/k6/README.md` para mais detalhes sobre cada conceito
-
 ## Documentação
 - Swagger disponível em `/api-docs`
 - Playground GraphQL disponível em `/graphql`
