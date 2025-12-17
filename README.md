@@ -267,14 +267,14 @@ npm run test-k6-all
 
 #### Conceitos K6 Implementados
 
-Todos os 11 conceitos obrigatórios foram implementados no arquivo `test/k6/api-checkout.test.js`:
+Todos os 11 conceitos obrigatórios foram implementados no arquivo `test/k6/api-rest-performance.test.js`:
 
 ##### 1. Thresholds
 
 O código abaixo demonstra o uso de **Thresholds** para definir critérios de sucesso/falha do teste:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 export const options = {
     thresholds: {
         http_req_duration: ['p(95)<2000', 'p(99)<3000'],
@@ -307,7 +307,7 @@ export function validateRegister(response) {
 O código abaixo demonstra o uso de **Helpers** - funções reutilizáveis importadas de módulos externos:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 import { register, login, validateRegister, validateLogin } from './helpers/authHelpers.js';
 import { checkoutBoleto, checkoutCreditCard } from './helpers/checkoutHelpers.js';
 import { randomEmail, randomName, randomPassword } from './helpers/randomData.js';
@@ -323,7 +323,7 @@ validateRegister(response);
 O código abaixo demonstra o uso de **Trends** - métricas customizadas para rastrear valores específicos:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 import { Trend } from 'k6/metrics';
 
 const registerDuration = new Trend('custom_register_duration');
@@ -369,11 +369,11 @@ export function randomCreditCard() {
 O código abaixo demonstra o uso de **Variáveis de Ambiente** para configurar URLs dinamicamente:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 const BASE_URL = __ENV.BASE_URL_REST || 'http://localhost:3000';
 
 // Executar com variável de ambiente:
-// k6 run -e BASE_URL_REST=https://api.production.com test/k6/api-checkout.test.js
+// k6 run -e BASE_URL_REST=https://api.production.com test/k6/api-rest-performance.test.js
 ```
 
 ##### 7. Stages
@@ -381,7 +381,7 @@ const BASE_URL = __ENV.BASE_URL_REST || 'http://localhost:3000';
 O código abaixo demonstra o uso de **Stages** para simular diferentes fases de carga:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 export const options = {
     stages: [
         { duration: '10s', target: 5 },   // Ramp up para 5 usuários
@@ -399,7 +399,7 @@ export const options = {
 O código abaixo demonstra o **Reaproveitamento de Resposta** entre requisições sequenciais:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 group('Registro de usuário', function () {
     const userEmail = randomEmail();
     const userPassword = randomPassword();
@@ -457,7 +457,7 @@ export function checkoutBoleto(token, items, freight) {
 O código abaixo demonstra o uso de **Data-Driven Testing** com dados externos:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 import { SharedArray } from 'k6/data';
 
 // Carrega dados de arquivos JSON
@@ -489,10 +489,10 @@ group('Checkout com produtos variados (Data-Driven)', function () {
 
 ##### 11. Groups
 
-O código abaixo está armazenado no arquivo `test/k6/api-checkout.test.js` e demonstra o uso de **Groups** para organizar cenários de teste, fazendo uso de um Helper (função de login importada de outro script):
+O código abaixo está armazenado no arquivo `test/k6/api-rest-performance.test.js` e demonstra o uso de **Groups** para organizar cenários de teste, fazendo uso de um Helper (função de login importada de outro script):
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 import { login } from './helpers/authHelpers.js';
 
 group('Login de usuário', function () {
@@ -518,7 +518,7 @@ group('Checkout com boleto - Novo usuário', function () {
 Após a execução dos testes, um relatório HTML é gerado automaticamente em `test/k6/report.html`:
 
 ```javascript
-// test/k6/api-checkout.test.js
+// test/k6/api-rest-performance.test.js
 import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
 
 export function handleSummary(data) {
