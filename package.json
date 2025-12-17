@@ -13,7 +13,9 @@
     "test-controller": "mocha './test/controller/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-k6-rest": "k6 run test/k6/api-rest-performance.test.js",
     "test-k6-graphql": "k6 run test/k6/api-graphql-performance.test.js",
-    "test-k6-all": "k6 run test/k6/api-rest-performance.test.js && k6 run test/k6/api-graphql-performance.test.js"
+    "test-k6-all": "k6 run test/k6/api-rest-performance.test.js && k6 run test/k6/api-graphql-performance.test.js",
+    "test-k6-rest:open": "npm run test-k6-rest && open test/k6/report.html",
+    "test-k6-graphql:open": "npm run test-k6-graphql && open test/k6/report-graphql.html"
   },
   "repository": {
     "type": "git",

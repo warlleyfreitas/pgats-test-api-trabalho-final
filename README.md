@@ -255,6 +255,10 @@ npm run test-k6-graphql  # Terminal 2
 
 # Executar todos os testes K6
 npm run test-k6-all
+
+# Executar e abrir relatório HTML automaticamente
+npm run test-k6-rest:open      # Executa e abre report.html
+npm run test-k6-graphql:open   # Executa e abre report-graphql.html
 ```
 
 #### Cenários Testados
@@ -264,6 +268,7 @@ npm run test-k6-all
 - ✅ Checkout com cartão de crédito (com desconto de 5%)
 - ✅ Testes com diferentes fases de carga (stages)
 - ✅ Validação de performance (95% das requisições < 2s)
+- ✅ Geração automática de relatórios HTML e JSON
 
 #### Conceitos K6 Implementados
 
@@ -515,7 +520,7 @@ group('Checkout com boleto - Novo usuário', function () {
 
 #### Relatório HTML
 
-Após a execução dos testes, um relatório HTML é gerado automaticamente em `test/k6/report.html`:
+Após a execução dos testes, relatórios HTML são gerados automaticamente:
 
 ```javascript
 // test/k6/api-rest-performance.test.js
@@ -525,12 +530,28 @@ export function handleSummary(data) {
     return {
         'stdout': textSummary(data, { indent: ' ', enableColors: true }),
         'test/k6/summary.json': JSON.stringify(data),
-        'test/k6/report.html': htmlReport(data) // Relatório HTML
+        'test/k6/report.html': htmlReport(data)
+    };
+}
+
+// test/k6/api-graphql-performance.test.js
+export function handleSummary(data) {
+    return {
+        'stdout': textSummary(data, { indent: ' ', enableColors: true }),
+        'test/k6/summary-graphql.json': JSON.stringify(data),
+        'test/k6/report-graphql.html': htmlReport(data)
     };
 }
 ```
 
-Para visualizar: `open test/k6/report.html`
+**Para visualizar os relatórios:**
+```bash
+# Relatório REST
+open test/k6/report.html
+
+# Relatório GraphQL
+open test/k6/report-graphql.html
+```
 
 ## Documentação
 - Swagger disponível em `/api-docs`

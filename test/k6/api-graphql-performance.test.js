@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { sleep, check, group } from 'k6';
+import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.2/index.js';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
@@ -320,7 +321,8 @@ export default function () {
 export function handleSummary(data) {
     return {
         'stdout': textSummary(data, { indent: ' ', enableColors: true }),
-        'test/k6/summary-graphql.json': JSON.stringify(data)
+        'test/k6/summary-graphql.json': JSON.stringify(data),
+        'test/k6/report-graphql.html': htmlReport(data)
     };
 }
 
