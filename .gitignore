@@ -1,4 +1,7 @@
 node_modules/
 .env
 mochawesome-report
-test/k6/README.md
+test/k6/summary.json
+test/k6/summary-graphql.json
+test/k6/report.html
+test/k6/support
