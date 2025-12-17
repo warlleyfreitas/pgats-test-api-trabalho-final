@@ -11,9 +11,9 @@
     "test-external-graphql": "mocha './test/external/checkoutExternalGraphQL.test.js' --timeout 10000 --reporter mochawesome",
     "test-external": "mocha './test/external/**/*.test.js' --timeout 10000 --reporter mochawesome",
     "test-controller": "mocha './test/controller/**/*.test.js' --timeout 10000 --reporter mochawesome",
-    "test-k6-rest": "k6 run test/k6/test-performance.js",
-    "test-k6-graphql": "k6 run test/k6/test-performance-graphql.js",
-    "test-k6-all": "k6 run test/k6/test-performance.js && k6 run test/k6/test-performance-graphql.js"
+    "test-k6-rest": "k6 run test/k6/api-rest-performance.test.js",
+    "test-k6-graphql": "k6 run test/k6/api-graphql-performance.test.js",
+    "test-k6-all": "k6 run test/k6/api-rest-performance.test.js && k6 run test/k6/api-graphql-performance.test.js"
   },
   "repository": {
     "type": "git",

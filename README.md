@@ -262,10 +262,277 @@ npm run test-k6-all
 - ✅ Login e autenticação JWT
 - ✅ Checkout com boleto
 - ✅ Checkout com cartão de crédito (com desconto de 5%)
-- ✅ Testes com 10 VUs (usuários virtuais) por 30 segundos
+- ✅ Testes com diferentes fases de carga (stages)
 - ✅ Validação de performance (95% das requisições < 2s)
 
-📖 **Documentação completa:** Veja `test/k6/README.md` para mais detalhes
+#### Conceitos K6 Implementados
+
+Todos os 11 conceitos obrigatórios foram implementados no arquivo `test/k6/api-rest-performance.test.js`:
+
+##### 1. Thresholds
+
+O código abaixo demonstra o uso de **Thresholds** para definir critérios de sucesso/falha do teste:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+export const options = {
+    thresholds: {
+        http_req_duration: ['p(95)<2000', 'p(99)<3000'],
+        http_req_failed: ['rate<0.01'],
+        'http_req_duration{name:user_register}': ['p(95)<1500'],
+        'http_req_duration{name:user_login}': ['p(95)<1000'],
+        'checkout_success_count': ['count>50']
+    }
+};
+```
+
+##### 2. Checks
+
+O código abaixo está armazenado no arquivo `test/k6/helpers/authHelpers.js` e demonstra o uso de **Checks** para validação de respostas:
+
+```javascript
+// test/k6/helpers/authHelpers.js
+export function validateRegister(response) {
+    return check(response, {
+        'registro: status é 201': (res) => res.status === 201,
+        'registro: retorna user': (res) => res.json('user') !== undefined,
+        'registro: retorna email': (res) => res.json('user.email') !== undefined,
+        'registro: retorna nome': (res) => res.json('user.name') !== undefined
+    });
+}
+```
+
+##### 3. Helpers
+
+O código abaixo demonstra o uso de **Helpers** - funções reutilizáveis importadas de módulos externos:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+import { register, login, validateRegister, validateLogin } from './helpers/authHelpers.js';
+import { checkoutBoleto, checkoutCreditCard } from './helpers/checkoutHelpers.js';
+import { randomEmail, randomName, randomPassword } from './helpers/randomData.js';
+
+// Uso no teste
+const userEmail = randomEmail();
+const response = register(userEmail, randomPassword(), randomName());
+validateRegister(response);
+```
+
+##### 4. Trends
+
+O código abaixo demonstra o uso de **Trends** - métricas customizadas para rastrear valores específicos:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+import { Trend } from 'k6/metrics';
+
+const registerDuration = new Trend('custom_register_duration');
+const loginDuration = new Trend('custom_login_duration');
+const checkoutDuration = new Trend('custom_checkout_duration');
+
+// Uso no teste
+group('Registro de usuário', function () {
+    const response = register(userEmail, userPassword, userName);
+    registerDuration.add(response.timings.duration); // Adiciona ao Trend
+    validateRegister(response);
+});
+```
+
+##### 5. Faker
+
+O código abaixo está armazenado no arquivo `test/k6/helpers/randomData.js` e demonstra o uso de **Faker** (simulado) para gerar dados aleatórios:
+
+```javascript
+// test/k6/helpers/randomData.js
+import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export function randomEmail() {
+    const timestamp = Date.now();
+    const random = randomString(8);
+    return `user_${timestamp}_${random}@test.com`;
+}
+
+export function randomName() {
+    const names = ['Alice', 'Bob', 'Carol', 'David', 'Eve'];
+    const surnames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Lima'];
+    return `${names[Math.floor(Math.random() * names.length)]} ${surnames[Math.floor(Math.random() * surnames.length)]}`;
+}
+
+export function randomCreditCard() {
+    const testCards = ['4111111111111111', '5555555555554444', '378282246310005'];
+    return testCards[Math.floor(Math.random() * testCards.length)];
+}
+```
+
+##### 6. Variável de Ambiente
+
+O código abaixo demonstra o uso de **Variáveis de Ambiente** para configurar URLs dinamicamente:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+const BASE_URL = __ENV.BASE_URL_REST || 'http://localhost:3000';
+
+// Executar com variável de ambiente:
+// k6 run -e BASE_URL_REST=https://api.production.com test/k6/api-rest-performance.test.js
+```
+
+##### 7. Stages
+
+O código abaixo demonstra o uso de **Stages** para simular diferentes fases de carga:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+export const options = {
+    stages: [
+        { duration: '10s', target: 5 },   // Ramp up para 5 usuários
+        { duration: '20s', target: 10 },  // Ramp up para 10 usuários
+        { duration: '30s', target: 10 },  // Mantém 10 usuários (carga constante)
+        { duration: '10s', target: 15 },  // Spike para 15 usuários
+        { duration: '10s', target: 5 },   // Ramp down para 5 usuários
+        { duration: '10s', target: 0 }    // Ramp down para 0
+    ]
+};
+```
+
+##### 8. Reaproveitamento de Resposta
+
+O código abaixo demonstra o **Reaproveitamento de Resposta** entre requisições sequenciais:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+group('Registro de usuário', function () {
+    const userEmail = randomEmail();
+    const userPassword = randomPassword();
+    const userName = randomName();
+    
+    // 1. Registra usuário
+    const registerResponse = register(userEmail, userPassword, userName);
+    validateRegister(registerResponse);
+    
+    // 2. REAPROVEITAMENTO: Usa dados do registro para fazer login
+    const loginResponse = login(userEmail, userPassword);
+    
+    // 3. REAPROVEITAMENTO: Extrai token do login
+    const token = loginResponse.json('token');
+    
+    // 4. REAPROVEITAMENTO: Usa token para autenticar checkout
+    if (token) {
+        const checkoutResponse = checkoutBoleto(token, items, 20);
+        validateCheckout(checkoutResponse, 'boleto');
+    }
+});
+```
+
+##### 9. Uso de Token de Autenticação
+
+O código abaixo está armazenado no arquivo `test/k6/helpers/checkoutHelpers.js` e demonstra o **Uso de Token de Autenticação JWT**:
+
+```javascript
+// test/k6/helpers/checkoutHelpers.js
+export function checkoutBoleto(token, items, freight) {
+    const payload = JSON.stringify({
+        items: items,
+        freight: freight,
+        paymentMethod: 'boleto'
+    });
+
+    const response = http.post(
+        `${BASE_URL}/api/checkout`,
+        payload,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Token JWT aqui
+            },
+            tags: { name: 'checkout_boleto' }
+        }
+    );
+
+    return response;
+}
+```
+
+##### 10. Data-Driven Testing
+
+O código abaixo demonstra o uso de **Data-Driven Testing** com dados externos:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+import { SharedArray } from 'k6/data';
+
+// Carrega dados de arquivos JSON
+const products = new SharedArray('products', function () {
+    return JSON.parse(open('./data/products.json'));
+});
+
+const existingUsers = new SharedArray('existing_users', function () {
+    return JSON.parse(open('./data/users.json'));
+});
+
+// Uso no teste - cada VU usa um usuário diferente
+group('Login com usuário existente (Data-Driven)', function () {
+    const userData = existingUsers[__VU % existingUsers.length];
+    const response = login(userData.email, userData.password);
+    validateLogin(response);
+});
+
+// Uso no teste - cada iteração usa um produto diferente
+group('Checkout com produtos variados (Data-Driven)', function () {
+    const product = products[__ITER % products.length];
+    const items = [{ 
+        productId: product.productId, 
+        quantity: product.quantity 
+    }];
+    const checkoutResponse = checkoutBoleto(token, items, 10);
+});
+```
+
+##### 11. Groups
+
+O código abaixo está armazenado no arquivo `test/k6/api-rest-performance.test.js` e demonstra o uso de **Groups** para organizar cenários de teste, fazendo uso de um Helper (função de login importada de outro script):
+
+```javascript
+// test/k6/api-rest-performance.test.js
+import { login } from './helpers/authHelpers.js';
+
+group('Login de usuário', function () {
+    const response = login(email, password); // Helper importado
+    
+    check(response, {
+        'login: status é 200': (res) => res.status === 200,
+        'login: retorna token': (res) => res.json('token') !== undefined
+    });
+    
+    token = response.json('token');
+});
+
+group('Checkout com boleto - Novo usuário', function () {
+    const items = [{ productId: 1, quantity: 2 }];
+    const response = checkoutBoleto(token, items, 20);
+    validateCheckout(response, 'boleto');
+});
+```
+
+#### Relatório HTML
+
+Após a execução dos testes, um relatório HTML é gerado automaticamente em `test/k6/report.html`:
+
+```javascript
+// test/k6/api-rest-performance.test.js
+import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
+
+export function handleSummary(data) {
+    return {
+        'stdout': textSummary(data, { indent: ' ', enableColors: true }),
+        'test/k6/summary.json': JSON.stringify(data),
+        'test/k6/report.html': htmlReport(data) // Relatório HTML
+    };
+}
+```
+
+Para visualizar: `open test/k6/report.html`
+
+📖 **Documentação completa:** Veja `test/k6/README.md` para mais detalhes sobre cada conceito
 
 ## Documentação
 - Swagger disponível em `/api-docs`

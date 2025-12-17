@@ -1,0 +1,22 @@
+[
+    {
+        "productId": 1,
+        "quantity": 2,
+        "description": "Produto A"
+    },
+    {
+        "productId": 2,
+        "quantity": 1,
+        "description": "Produto B"
+    },
+    {
+        "productId": 1,
+        "quantity": 3,
+        "description": "Produto A - quantidade maior"
+    },
+    {
+        "productId": 2,
+        "quantity": 2,
+        "description": "Produto B - quantidade média"
+    }
+]
