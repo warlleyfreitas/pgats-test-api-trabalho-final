@@ -1,38 +1,42 @@
-import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+import { randomString, randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 /**
- * Helper para gerar dados aleatórios
- * Simula o comportamento do Faker para geração de dados de teste
+ * CONCEITO: FAKER - Geração de Dados Aleatórios para Testes
+ * 
+ * Este módulo implementa o conceito de "Faker" através de funções que geram
+ * dados realistas e aleatórios para testes de performance. Utiliza k6-utils,
+ * uma biblioteca oficial do K6 para geração de dados aleatórios.
  */
 
 /**
  * Gera um email aleatório único
- * @returns {string} Email no formato user_<timestamp>_<random>@test.com
+ * @returns {string} Email aleatório
  */
 export function randomEmail() {
-    const timestamp = Date.now();
-    const random = randomString(8);
-    return `user_${timestamp}_${random}@test.com`;
+    const domains = ['example.com', 'test.com', 'mail.com', 'demo.org'];
+    const username = randomString(8).toLowerCase();
+    const domain = domains[Math.floor(Math.random() * domains.length)];
+    return `${username}@${domain}`;
 }
 
 /**
- * Gera um nome aleatório
- * @returns {string} Nome no formato "Test User <random>"
+ * Gera um nome completo aleatório
+ * @returns {string} Nome completo
  */
 export function randomName() {
-    const names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Henry'];
-    const surnames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Lima', 'Ferreira', 'Costa', 'Alves'];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomSurname = surnames[Math.floor(Math.random() * surnames.length)];
-    return `${randomName} ${randomSurname}`;
+    const firstNames = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+    const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Lima', 'Ferreira', 'Costa', 'Alves', 'Rocha', 'Pereira'];
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    return `${firstName} ${lastName}`;
 }
 
 /**
  * Gera uma senha aleatória
- * @returns {string} Senha de 8 caracteres
+ * @returns {string} Senha aleatória
  */
 export function randomPassword() {
-    return randomString(8);
+    return randomString(12);
 }
 
 /**
@@ -41,9 +45,9 @@ export function randomPassword() {
  */
 export function randomCreditCard() {
     const testCards = [
-        '4111111111111111', // Visa
-        '5555555555554444', // Mastercard
-        '378282246310005'   // American Express
+        '4111111111111111',
+        '5555555555554444',
+        '378282246310005'
     ];
     return testCards[Math.floor(Math.random() * testCards.length)];
 }
@@ -53,7 +57,7 @@ export function randomCreditCard() {
  * @returns {string} CVV de 3 dígitos
  */
 export function randomCVV() {
-    return String(Math.floor(Math.random() * 900) + 100);
+    return String(randomIntBetween(100, 999));
 }
 
 /**
@@ -61,8 +65,10 @@ export function randomCVV() {
  * @returns {string} Data no formato MM/YY
  */
 export function randomCardExpiry() {
-    const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-    const year = String(new Date().getFullYear() + Math.floor(Math.random() * 5) + 1).slice(-2);
+    const currentYear = new Date().getFullYear();
+    const futureYear = currentYear + randomIntBetween(1, 5);
+    const month = String(randomIntBetween(1, 12)).padStart(2, '0');
+    const year = String(futureYear).slice(-2);
     return `${month}/${year}`;
 }
 

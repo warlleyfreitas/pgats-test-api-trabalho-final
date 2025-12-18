@@ -228,11 +228,17 @@ function testarCheckoutComUsuarioExistente(token) {
     });
 }
 
-// ============ GERAÇÃO DE RELATÓRIO HTML ============
 export function handleSummary(data) {
-    return {
+    const summary = {
         'stdout': textSummary(data, { indent: ' ', enableColors: true }),
-        'test/k6/summary.json': JSON.stringify(data),
-        'test/k6/report.html': htmlReport(data)
+        'test/k6/summary.json': JSON.stringify(data)
     };
+
+    try {
+        summary['test/k6/report.html'] = htmlReport(data);
+    } catch (e) {
+        console.error('Failed to generate HTML report:', e);
+    }
+
+    return summary;
 }

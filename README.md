@@ -224,6 +224,7 @@ Acesse o playground GraphQL em [http://localhost:4000/graphql](http://localhost:
 ⚡ **Novos testes de performance com K6!**
 
 #### Instalação do K6
+
 ```bash
 # macOS
 brew install k6
@@ -343,31 +344,74 @@ group('Registro de usuário', function () {
 });
 ```
 
-##### 5. Faker
+##### 5. Faker (Geração de Dados Aleatórios)
 
-O código abaixo está armazenado no arquivo `test/k6/helpers/randomData.js` e demonstra o uso de **Faker** (simulado) para gerar dados aleatórios:
+O código abaixo está armazenado no arquivo `test/k6/helpers/randomData.js` e demonstra o uso do conceito **Faker** para **geração de dados realistas e aleatórios** utilizando a biblioteca `k6-utils`:
 
 ```javascript
 // test/k6/helpers/randomData.js
-import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+import { randomString, randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+/**
+ * CONCEITO: FAKER - Geração de Dados Aleatórios para Testes
+ */
 
 export function randomEmail() {
-    const timestamp = Date.now();
-    const random = randomString(8);
-    return `user_${timestamp}_${random}@test.com`;
+    const domains = ['example.com', 'test.com', 'mail.com', 'demo.org'];
+    const username = randomString(8).toLowerCase();
+    const domain = domains[Math.floor(Math.random() * domains.length)];
+    return `${username}@${domain}`;
 }
 
 export function randomName() {
-    const names = ['Alice', 'Bob', 'Carol', 'David', 'Eve'];
-    const surnames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Lima'];
-    return `${names[Math.floor(Math.random() * names.length)]} ${surnames[Math.floor(Math.random() * surnames.length)]}`;
+    const firstNames = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+    const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Lima', 'Ferreira', 'Costa', 'Alves', 'Rocha', 'Pereira'];
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    return `${firstName} ${lastName}`;
+}
+
+export function randomPassword() {
+    return randomString(12);
 }
 
 export function randomCreditCard() {
     const testCards = ['4111111111111111', '5555555555554444', '378282246310005'];
     return testCards[Math.floor(Math.random() * testCards.length)];
 }
+
+export function randomCVV() {
+    return String(randomIntBetween(100, 999));
+}
+
+export function randomCardExpiry() {
+    const currentYear = new Date().getFullYear();
+    const futureYear = currentYear + randomIntBetween(1, 5);
+    const month = String(randomIntBetween(1, 12)).padStart(2, '0');
+    const year = String(futureYear).slice(-2);
+    return `${month}/${year}`;
+}
 ```
+
+**Uso nos testes:**
+```javascript
+// test/k6/api-rest-performance.test.js
+import { randomEmail, randomName, randomPassword, randomCreditCard, randomCVV, randomCardExpiry } from './helpers/randomData.js';
+
+const registerPayload = {
+    name: randomName(),          // Gera nome aleatório
+    email: randomEmail(),        // Gera email aleatório
+    password: randomPassword()   // Gera senha aleatória
+};
+
+const cardData = {
+    number: randomCreditCard(),  // Gera número de cartão válido
+    cvv: randomCVV(),            // Gera CVV aleatório
+    expiry: randomCardExpiry()   // Gera data de expiração futura
+};
+```
+
+> **Nota:** Este helper implementa o conceito de "Faker" através de geração programática de dados aleatórios. Utiliza `k6-utils`, uma biblioteca oficial do K6, garantindo compatibilidade com instalações padrão do K6 e ambientes de CI/CD.
 
 ##### 6. Variável de Ambiente
 

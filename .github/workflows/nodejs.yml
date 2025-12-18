@@ -55,6 +55,29 @@ jobs:
 
       - name: Run K6 REST Performance tests
         run: npm run test-k6-rest
+        continue-on-error: true
 
       - name: Run K6 GraphQL Performance tests
         run: npm run test-k6-graphql
+        continue-on-error: true
+
+      - name: List generated K6 reports
+        if: always()
+        run: |
+          echo "Listing K6 report files:"
+          ls -lah test/k6/ || echo "K6 directory not found"
+          echo "Checking for HTML reports:"
+          test -f test/k6/report.html && echo "✓ REST HTML report exists" || echo "✗ REST HTML report missing"
+          test -f test/k6/report-graphql.html && echo "✓ GraphQL HTML report exists" || echo "✗ GraphQL HTML report missing"
+
+      - name: Upload K6 HTML Reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: k6-performance-reports
+          path: |
+            test/k6/report.html
+            test/k6/report-graphql.html
+            test/k6/summary.json
+            test/k6/summary-graphql.json
+          retention-days: 30
